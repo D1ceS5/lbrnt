@@ -1,167 +1,181 @@
 var canvas = document.getElementById("matrix");
 var ctx = canvas.getContext("2d");
 
-let size = canvas.height-20
-
+let fieldSize = canvas.height - 20
+let cellSize = 10
 let color = {
     false: "#FFFFFF",
     true: "#000000",
-    visited: "#AF3BD4",
+    visited: "blue",
     current: "#00CC00",
     wall: "#000000",
-    cell: "#FFFFFF",
-    final: 'yellow',
+    cell: "beige",
+    final: 'brown',
     wrong: "red",
     visitedSolve: 'blue'
 }
-let cells = []
-let walls = []
-let visited = []
-let stack = []
-let currentCell = { x: 10, y: 10 }
-let finalCell = { x: size-10, y: size-10 };
-for (let x = 0; x <= size; x += 10) {
-    for (let y = 0; y <= size; y += 10) {
-        let whichC = ((y / 10) % 2 == 0) || ((x / 10) % 2 == 0) || x == 600 || y == 600
-        ctx.fillStyle = color[whichC];
-        ctx.fillRect(x, y, 10, 10);
-        if (whichC) walls.push({ x, y })
-        else cells.push({ x, y })
+
+
+
+class Cell {
+    constructor(x, y, type) {
+        this.x = x;
+        this.y = y;
+        this.type = type;
     }
 }
+
+let currentCell = new Cell(cellSize, cellSize, 'current')
+let finalCell = new Cell(-1, -1, 'none')
+let matrix = initMatrix();
+let stack = [];
+let path = []
+console.log(matrix);
+drawMatrix()
+generateLabyrinth()
+
+
+async function generateLabyrinth() {
+    matrix[currentCell.y / cellSize][currentCell.x / cellSize].type = 'visited'
+    let neighbours = getNeighbours(currentCell.y / cellSize, currentCell.x / cellSize)
+    let unvisited = getUnvisited()
+    if (unvisited.length == 0) {
+        refreshLabyrinth()
+        labyrinthSolve()
+        return
+    }
+    if (neighbours.length != 0) {
+        let randIndex = getRandInt(0, neighbours.length - 1);
+        let selected = neighbours[randIndex][0];
+        let selectedWall = neighbours[randIndex][1];
+        if (neighbours.length > 1) stack.push(currentCell);
+        matrix[selected.y / cellSize][selected.x / cellSize].type = 'current';
+        matrix[selectedWall.y / cellSize][selectedWall.x / cellSize].type = 'visited';
+        currentCell = selected
+    }
+    else if (stack.length != 0) {
+        currentCell = stack.pop()
+    }
+    else {
+        let randIndex = getRandInt(0, unvisited.length - 1)
+        currentCell = unvisited[randIndex]
+    }
+    drawMatrix()
+    await new Promise(resolve => setTimeout(resolve, 10));
+    generateLabyrinth();
+
+}
+function refreshLabyrinth() {
+
+    matrix[1][1].type = 'current'
+    currentCell = matrix[1][1]
+    matrix[matrix.length - 2][matrix.length - 2].type = 'final'
+    finalCell = matrix[matrix.length - 2][matrix.length - 2]
+    for (let y = 0; y < matrix.length; y++) {
+        for (let x = 0; x < matrix.length; x++) {
+
+            if (matrix[y][x].type == 'visited') matrix[y][x].type = 'cell'
+            let element = matrix[y][x]
+
+            ctx.fillStyle = color[matrix[y][x].type];
+            ctx.fillRect(element.x, element.y, cellSize, cellSize);
+        }
+    }
+}
+async function labyrinthSolve() {
+    let neighbours = getNeighboursNoWall(currentCell.y / cellSize, currentCell.x / cellSize)
+    //console.log(neighbours)
+    //matrix[currentCell.y / cellSize][currentCell.x / cellSize].type = 'visited'
+    if (neighbours.length != 0) {
+        let randIndex = getRandInt(0, neighbours.length - 1);
+        let selected = neighbours[randIndex];
+        if (neighbours.length > 1) {
+            stack.push(currentCell)
+            wrongStack = []
+        }
+        matrix[selected.y / cellSize][selected.x / cellSize].type = 'current'
+        currentCell = selected
+    }
+    else if (stack.length != 0) {
+        currentCell = stack.pop()
+        console.log("Before", path.length)
+        let removed = path.splice(path.findIndex(p => p.x == currentCell.x && p.y == currentCell.y))
+        removePath(removed)
+        console.log("After", path.length)
+        console.log(path)
+    }
+    else {
+        console.log("No vars and no stack")
+        return
+    }
+    if (currentCell.x == finalCell.x && currentCell.y == finalCell.y) {
+        console.log("Finded")
+        return
+    }
+    
+    path.push(currentCell);
+    drawMatrix()
+    await new Promise(resolve => setTimeout(resolve, 10));
+    labyrinthSolve();
+}
+async function removePath(cells){
+    for(let cell of cells){
+        cell.type = 'visited'
+    }
+}
+function getUnvisited() {
+    return matrix.flat(2).filter(c => c.type != 'visited' && c.type != 'wall')
+}
+function getNeighbours(y, x) {
+    let ng = []
+    if (x - 2 > 0 && x - 2 < matrix.length - 1 && matrix[y][x - 2].type != 'visited') ng.push([matrix[y][x - 2], matrix[y][x - 1]]);
+    if (x + 2 > 0 && x + 2 < matrix.length - 1 && matrix[y][x + 2].type != 'visited') ng.push([matrix[y][x + 2], matrix[y][x + 1]]);
+    if (y + 2 > 0 && y + 2 < matrix.length - 1 && matrix[y + 2][x].type != 'visited') ng.push([matrix[y + 2][x], matrix[y + 1][x]]);
+    if (y - 2 > 0 && y - 2 < matrix.length - 1 && matrix[y - 2][x].type != 'visited') ng.push([matrix[y - 2][x], matrix[y - 1][x]]);
+    return ng
+}
+function getNeighboursNoWall(y, x) {
+    let ng = []
+    if (x - 1 > 0 && x - 1 < matrix.length - 1 && matrix[y][x - 1].type != 'visited' && matrix[y][x - 1].type != 'wrong' && matrix[y][x - 1].type != 'wall') ng.push(matrix[y][x - 1]);
+    if (x + 1 > 0 && x + 1 < matrix.length - 1 && matrix[y][x + 1].type != 'visited' && matrix[y][x + 1].type != 'wrong' && matrix[y][x + 1].type != 'wall') ng.push(matrix[y][x + 1]);
+    if (y + 1 > 0 && y + 1 < matrix.length - 1 && matrix[y + 1][x].type != 'visited' && matrix[y + 1][x].type != 'wrong' && matrix[y + 1][x].type != 'wall') ng.push(matrix[y + 1][x]);
+    if (y - 1 > 0 && y - 1 < matrix.length - 1 && matrix[y - 1][x].type != 'visited' && matrix[y - 1][x].type != 'wrong' && matrix[y - 1][x].type != 'wall') ng.push(matrix[y - 1][x]);
+    return ng
+}
+
+function drawMatrix() {
+    for (let y = 0; y < matrix.length; y++) {
+        for (let x = 0; x < matrix.length; x++) {
+
+            let element = matrix[y][x];
+            
+            if (element.x == currentCell.x && element.y == currentCell.y) {
+                matrix[y][x] = currentCell
+                element = currentCell
+            }
+            if (path.some(p => p.x == element.x && p.y == element.y)) {
+                element.type = 'wrong'
+            }
+            ctx.fillStyle = color[element.type];
+            ctx.fillRect(element.x, element.y, cellSize, cellSize);
+        }
+    }
+}
+
+function initMatrix() {
+    let result = []
+    for (let y = 0; y <= fieldSize; y += cellSize) {
+        let row = []
+        for (let x = 0; x <= fieldSize; x += cellSize) {
+            let cellType = ((y / cellSize) % 2 == 0) || ((x / cellSize) % 2 == 0) || x == 600 || y == 600
+            row.push(new Cell(x, y, cellType ? 'wall' : 'cell'))
+        }
+        result.push(row)
+    }
+    return result
+}
+
 function getRandInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min)
 }
-function updateMap() {
-    for (let x = 10; x < size; x += 10) {
-        for (let y = 10; y < size; y += 10) {
-            let wcolor = 'cell'
 
-            if (walls.some(w => w.x == x && w.y == y)) wcolor = 'wall'
-            if (visited.some(v => v.x == x && v.y == y)) wcolor = 'visited'
-            if (visitedSolve.some(v => v.x == x && v.y == y)) wcolor = 'visitedSolve'
-            if (wrongWay.some(v => v.x == x && v.y == y)) wcolor = 'wrong'
-            if (finalCell.x == x && finalCell.y == y) wcolor = 'final'
-            if (currentCell.x == x && currentCell.y == y) wcolor = 'current'
-
-            ctx.fillStyle = color[wcolor];
-            ctx.fillRect(x, y, 10, 10);
-        }
-    }
-}
-function getCellWall(cell) {
-    let diff = { x: currentCell.x - cell.x, y: currentCell.y - cell.y }
-    let xDiff = cell.x - currentCell.x
-    let yDiff = cell.y - currentCell.y
-    let wallX = (xDiff != 0) ? (xDiff / Math.abs(xDiff)) : 0
-    let wallY = (yDiff != 0) ? (yDiff / Math.abs(yDiff)) : 0
-    return { x: currentCell.x + (wallX * 10), y: currentCell.y + (wallY * 10) }
-}
-async function genLbrnt() {
-    visited.push({ x: currentCell.x, y: currentCell.y })
-    let variants = []
-    let l = { x: currentCell.x - 20, y: currentCell.y }
-    let r = { x: currentCell.x + 20, y: currentCell.y }
-    let u = { x: currentCell.x, y: currentCell.y + 20 }
-    let d = { x: currentCell.x, y: currentCell.y - 20 }
-    if (l.x > 0 && l.y > 0 && l.x < size && l.y < size && !visited.some(v => v.x == l.x && v.y == l.y) && !visited.some(v => v.x == getCellWall(l).x && v.y == getCellWall(l).y) && !walls.some(v => v.x == l.x && v.y == l.y)) variants.push(l);
-    if (r.x > 0 && r.y > 0 && r.x < size && r.y < size && !visited.some(v => v.x == r.x && v.y == r.y) && !visited.some(v => v.x == getCellWall(r).x && v.y == getCellWall(r).y) && !walls.some(v => v.x == r.x && v.y == r.y)) variants.push(r);
-    if (u.x > 0 && u.y > 0 && u.x < size && u.y < size && !visited.some(v => v.x == u.x && v.y == u.y) && !visited.some(v => v.x == getCellWall(u).x && v.y == getCellWall(u).y) && !walls.some(v => v.x == u.x && v.y == u.y)) variants.push(u);
-    if (d.x > 0 && d.y > 0 && d.x < size && d.y < size && !visited.some(v => v.x == d.x && v.y == d.y) && !visited.some(v => v.x == getCellWall(d).x && v.y == getCellWall(d).y) && !walls.some(v => v.x == d.x && v.y == d.y)) variants.push(d);
-    let newCur
-    let index = getRandInt(0, variants.length - 1)
-
-    if (variants.length != 0) {
-        newCur = variants[index];
-        stack.push(currentCell);
-        let diff = { x: currentCell.x - newCur.x, y: currentCell.y - newCur.y }
-        visited.push({ x: newCur.x, y: newCur.y })
-        let xDiff = newCur.x - currentCell.x
-        let yDiff = newCur.y - currentCell.y
-        let wallX = (xDiff != 0) ? (xDiff / Math.abs(xDiff)) : 0
-        let wallY = (yDiff != 0) ? (yDiff / Math.abs(yDiff)) : 0
-        visited.push({ x: currentCell.x + (wallX * 10), y: currentCell.y + (wallY * 10) })
-        currentCell = newCur;
-    }
-    else if (stack.length > 0) {
-        currentCell = stack.pop();
-    }
-    else {
-        let unvisited = getUnvisited()
-        let index = getRandInt(0, unvisited.length - 1)
-        currentCell = unvisited[index]
-    }
-
-    updateMap()
-    if (getUnvisited().length == 0) {
-        currentCell = { x: 10, y: 10 }
-        solveLbrnt();
-        return
-    }
-    await new Promise(resolve => setTimeout(resolve, 1));
-    genLbrnt()
-
-}
-let visitedSolve = []
-let solveStack = []
-let wrongWay = []
-let wrongStack = []
-let isChecking = false;
-async function solveLbrnt() {
-    console.log(currentCell)
-
-    while (currentCell.x != finalCell.x || currentCell.y != finalCell.y) {
-
-        let variants = []
-        let l = { x: currentCell.x - 10, y: currentCell.y }
-        let r = { x: currentCell.x + 10, y: currentCell.y }
-        let u = { x: currentCell.x, y: currentCell.y + 10 }
-        let d = { x: currentCell.x, y: currentCell.y - 10 }
-        if (l.x > 0 && l.y > 0 && l.x < size && l.y < size && !visitedSolve.some(v => v.x == l.x && v.y == l.y) && visited.some(v => v.x == l.x && v.y == l.y)) variants.push(l);
-        if (r.x > 0 && r.y > 0 && r.x < size && r.y < size && !visitedSolve.some(v => v.x == r.x && v.y == r.y) && visited.some(v => v.x == r.x && v.y == r.y)) variants.push(r);
-        if (u.x > 0 && u.y > 0 && u.x < size && u.y < size && !visitedSolve.some(v => v.x == u.x && v.y == u.y) && visited.some(v => v.x == u.x && v.y == u.y)) variants.push(u);
-        if (d.x > 0 && d.y > 0 && d.x < size && d.y < size && !visitedSolve.some(v => v.x == d.x && v.y == d.y) && visited.some(v => v.x == d.x && v.y == d.y)) variants.push(d);
-        console.log('Variants', variants.length);
-        console.log('Stack', solveStack.length);
-        if (variants.length > 0) {
-           
-            
-            let index = getRandInt(0, variants.length - 1);
-            let newCur = variants[index];
-            if(variants.length>1){
-                solveStack.push(currentCell)
-                
-                wrongStack = []
-            };
-            visitedSolve.push(newCur)
-            
-            currentCell = newCur;
-        }
-        else if (solveStack.length != 0) {
-          
-            let newCur = solveStack.pop();
-            wrongWay.splice(wrongWay.findIndex(ww=>ww.x==newCur.x&&ww.y==newCur.y))
-            currentCell = newCur
-        }
-        else {
-            console.log("No vars and no stack")
-            break;
-        }
-        if (currentCell.x == finalCell.x && currentCell.y == finalCell.y){
-            console.log("Find")
-            break;
-        } 
-        wrongWay.push(currentCell)
-        
-        updateMap()
-        await new Promise(resolve => setTimeout(resolve, 1));
-    }
-    console.log("Find")
-}
-function getUnvisited() {
-    return cells.filter(c => !visited.some(v => v.x == c.x && v.y == c.y))
-}
-
-updateMap();
-
-genLbrnt()
