@@ -4,8 +4,7 @@ var ctx = canvas.getContext("2d");
 let fieldSize = canvas.height - 20
 let cellSize = 10
 let color = {
-    false: "#FFFFFF",
-    true: "#000000",
+
     visited: "blue",
     current: "#00CC00",
     wall: "#000000",
@@ -84,8 +83,15 @@ function refreshLabyrinth() {
 }
 async function labyrinthSolve() {
     let neighbours = getNeighboursNoWall(currentCell.y / cellSize, currentCell.x / cellSize)
-    //console.log(neighbours)
-    //matrix[currentCell.y / cellSize][currentCell.x / cellSize].type = 'visited'
+    let pathRemoved = false
+    let oldCurrent = currentCell
+
+    oldCurrent.type = 'wrong'
+    ctx.fillStyle = color[oldCurrent.type];
+    ctx.fillRect(oldCurrent.x, oldCurrent.y, cellSize, cellSize);
+    path.push(oldCurrent)
+    path.push(currentCell);
+
     if (neighbours.length != 0) {
         let randIndex = getRandInt(0, neighbours.length - 1);
         let selected = neighbours[randIndex];
@@ -93,34 +99,43 @@ async function labyrinthSolve() {
             stack.push(currentCell)
             wrongStack = []
         }
-        matrix[selected.y / cellSize][selected.x / cellSize].type = 'current'
+       
+
         currentCell = selected
+        ctx.fillStyle = color[currentCell.type];
+        ctx.fillRect(currentCell.x, currentCell.y, cellSize, cellSize);
     }
     else if (stack.length != 0) {
+        //pathRemoved = true;
+        currentCell.type = 'visited'
+        ctx.fillStyle = color[currentCell.type];
+        ctx.fillRect(currentCell.x, currentCell.y, cellSize, cellSize);
         currentCell = stack.pop()
-        console.log("Before", path.length)
         let removed = path.splice(path.findIndex(p => p.x == currentCell.x && p.y == currentCell.y))
+        removed.push(oldCurrent)
         removePath(removed)
-        console.log("After", path.length)
-        console.log(path)
     }
     else {
         console.log("No vars and no stack")
         return
     }
+    
+    
+
     if (currentCell.x == finalCell.x && currentCell.y == finalCell.y) {
         console.log("Finded")
         return
     }
-    
-    path.push(currentCell);
-    drawMatrix()
+    //drawMatrix()
     await new Promise(resolve => setTimeout(resolve, 10));
     labyrinthSolve();
 }
-async function removePath(cells){
-    for(let cell of cells){
+async function removePath(cells) {
+
+    for (let cell of cells) {
         cell.type = 'visited'
+        ctx.fillStyle = color[cell.type];
+        ctx.fillRect(cell.x, cell.y, cellSize, cellSize);
     }
 }
 function getUnvisited() {
@@ -148,7 +163,7 @@ function drawMatrix() {
         for (let x = 0; x < matrix.length; x++) {
 
             let element = matrix[y][x];
-            
+
             if (element.x == currentCell.x && element.y == currentCell.y) {
                 matrix[y][x] = currentCell
                 element = currentCell
