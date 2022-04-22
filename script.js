@@ -1,8 +1,12 @@
 var canvas = document.getElementById("matrix");
 var ctx = canvas.getContext("2d");
 
-let fieldSize = canvas.height - 20
+let fieldSize = canvas.height - 10
 let cellSize = 10
+let keepGen = true
+let generationStart,generationEnd
+let generationTimer
+
 let color = {
 
     visited: "#1924B1",
@@ -28,18 +32,27 @@ let finalCell = new Cell(-1, -1, 'none')
 let matrix = initMatrix();
 let stack = [];
 let path = []
-console.log(matrix);
+
 drawMatrix()
-generateLabyrinth()
+
 
 
 async function generateLabyrinth() {
+    if (!keepGen) {
+        keepGen = true
+        clearInterval(generationTimer)
+        return
+    }   
+    generationEnd = new Date()
     matrix[currentCell.y / cellSize][currentCell.x / cellSize].type = 'visited'
     let neighbours = getNeighbours(currentCell.y / cellSize, currentCell.x / cellSize)
     let unvisited = getUnvisited()
     if (unvisited.length == 0) {
         refreshLabyrinth()
-        labyrinthSolve()
+        $("#reset").css("display", "none");
+        $("#solve").css("display", "block");
+        $("#generate").css("display", "block");
+        clearInterval(generationTimer)
         return
     }
     if (neighbours.length != 0) {
@@ -82,7 +95,6 @@ function refreshLabyrinth() {
 }
 async function labyrinthSolve() {
     let neighbours = getNeighboursNoWall(currentCell.y / cellSize, currentCell.x / cellSize)
-    let pathRemoved = false
     let oldCurrent = currentCell
 
     oldCurrent.type = 'path'
@@ -123,6 +135,7 @@ async function labyrinthSolve() {
 
     if (currentCell.x == finalCell.x && currentCell.y == finalCell.y) {
         console.log("Finded")
+        $("#generate").css("display", "block");
         return
     }
     //drawMatrix()
@@ -195,8 +208,39 @@ function getRandInt(min, max) {
 
 $(document).ready(function () {
     $("input[type=color]").change(function (event) {
-       let target = event.target
-       color[target.id] = target.value
-       drawMatrix()
+        let target = event.target
+        color[target.id] = target.value
+        drawMatrix()
     });
+    $("#generate").click(function () {
+        generationStart = new Date()
+        if(!generationTimer){
+            generationTimer = setInterval(()=>{
+                let diff = (generationEnd.getTime()-generationStart.getTime())/1000
+                $("#timer").text(`Generation time: ${Math.abs(diff)}`)
+            })
+        }
+        $("#generate").css("display", "none");
+        $("#solve").css("display", "none");
+        $("#reset").css("display", "block");
+        currentCell = new Cell(cellSize, cellSize, 'current')
+        finalCell = new Cell(-1, -1, 'none')
+        matrix = initMatrix();
+        stack = [];
+        path = []
+        generateLabyrinth();
+    })
+    $("#reset").click(function () {
+        generationStart = new Date()
+        currentCell = new Cell(cellSize, cellSize, 'current')
+        finalCell = new Cell(-1, -1, 'none')
+        matrix = initMatrix();
+        stack = [];
+        path = []
+    })
+    $("#solve").click(function(){
+        $("#generate").css("display", "none");
+        $("#solve").css("display", "none");
+        labyrinthSolve()
+    })
 });

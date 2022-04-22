@@ -3,6 +3,7 @@
 <html lang="en">
 
 <head>
+    <title>Labyrinth</title>
     <meta charset="utf-8">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -10,42 +11,47 @@
 
 <body>
     <div id="labCont">
-        <canvas id="matrix" width="520px" height="520px"></canvas>
-        <form id="colors" name="colors">
-            <div class="colorDiv">
-                <input type="color" class="colorInp" id="visited" name="Visited" value="#1924B1">
-                <label for="Visited">Visited</label>
+        <canvas id="matrix" width="510px" height="510px"></canvas>
+        <div  name="colors">
+            <h3 id="timer">Generation time: 0.00</h3>
+            <div id="colors">
+                <div class="colorDiv">
+                    <input type="color" class="colorInp" id="visited" name="Visited" value="#1924B1">
+                    <label for="Visited">Visited</label>
+                </div>
+                <div class="colorDiv">
+                    <input type="color" class="colorInp" id="current" name="Current" value="#00CC00">
+                    <label for="Visited">Current</label>
+                </div>
+                <div class="colorDiv">
+                    <input type="color" class="colorInp" id="wall" name="Wall" value="#000000">
+                    <label for="Visited">Wall</label>
+                </div>
+                <div class="colorDiv">
+                    <input type="color" class="colorInp" id="cell" name="Cell" value="#FFFFFF">
+                    <label for="Visited">Cell</label>
+                </div>
+                <div class="colorDiv">
+                    <input type="color" class="colorInp" id="final" name="Final" value="#7109AA">
+                    <label for="Visited">Final</label>
+                </div>
+                <div class="colorDiv">
+                    <input type="color" class="colorInp" id="path" name="Path" value="#FF0000">
+                    <label for="Visited">Path</label>
+                </div>
             </div>
-            <div class="colorDiv">
-                <input type="color" class="colorInp" id="current" name="Current" value="#00CC00">
-                <label for="Visited">Current</label>
-            </div>
-            <div class="colorDiv">
-                <input type="color" class="colorInp" id="wall" name="Wall" value="#000000">
-                <label for="Visited">Wall</label>
-            </div>
-            <div class="colorDiv">
-                <input type="color" class="colorInp" id="cell" name="Cell" value="#FFFFFF">
-                <label for="Visited">Cell</label>
-            </div>
-            <div class="colorDiv">
-                <input type="color" class="colorInp" id="final" name="Final" value="#7109AA">
-                <label for="Visited">Final</label>
-            </div>
-            <div class="colorDiv">
-                <input type="color" class="colorInp" id="path" name="Path" value="#FF0000">
-                <label for="Visited">Path</label>
-            </div>
+            
 
 
 
-
-
-        </form>
+            
+            <button id="generate" class="action-button shadow animate green">Generate</button>
+            <button id="reset" class="action-button shadow animate red">Reset</button>
+            <button id="solve" class="action-button shadow animate green">Solve</button>
+        </div>
+        
     </div>
-    <!-- <div>
-        <button>Generate</button>
-    </div> -->
+   
     <script src="script.js"></script>
 </body>
 
