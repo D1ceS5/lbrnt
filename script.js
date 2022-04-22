@@ -5,13 +5,12 @@ let fieldSize = canvas.height - 20
 let cellSize = 10
 let color = {
 
-    visited: "blue",
+    visited: "#1924B1",
     current: "#00CC00",
     wall: "#000000",
-    cell: "beige",
-    final: 'brown',
-    wrong: "red",
-    visitedSolve: 'blue'
+    cell: "#FFFFFF",
+    final: '#7109AA',
+    path: "#FF0000",
 }
 
 
@@ -31,7 +30,7 @@ let stack = [];
 let path = []
 console.log(matrix);
 drawMatrix()
-generateLabyrinth()
+//generateLabyrinth()
 
 
 async function generateLabyrinth() {
@@ -86,7 +85,7 @@ async function labyrinthSolve() {
     let pathRemoved = false
     let oldCurrent = currentCell
 
-    oldCurrent.type = 'wrong'
+    oldCurrent.type = 'path'
     ctx.fillStyle = color[oldCurrent.type];
     ctx.fillRect(oldCurrent.x, oldCurrent.y, cellSize, cellSize);
     path.push(oldCurrent)
@@ -151,10 +150,10 @@ function getNeighbours(y, x) {
 }
 function getNeighboursNoWall(y, x) {
     let ng = []
-    if (x - 1 > 0 && x - 1 < matrix.length - 1 && matrix[y][x - 1].type != 'visited' && matrix[y][x - 1].type != 'wrong' && matrix[y][x - 1].type != 'wall') ng.push(matrix[y][x - 1]);
-    if (x + 1 > 0 && x + 1 < matrix.length - 1 && matrix[y][x + 1].type != 'visited' && matrix[y][x + 1].type != 'wrong' && matrix[y][x + 1].type != 'wall') ng.push(matrix[y][x + 1]);
-    if (y + 1 > 0 && y + 1 < matrix.length - 1 && matrix[y + 1][x].type != 'visited' && matrix[y + 1][x].type != 'wrong' && matrix[y + 1][x].type != 'wall') ng.push(matrix[y + 1][x]);
-    if (y - 1 > 0 && y - 1 < matrix.length - 1 && matrix[y - 1][x].type != 'visited' && matrix[y - 1][x].type != 'wrong' && matrix[y - 1][x].type != 'wall') ng.push(matrix[y - 1][x]);
+    if (x - 1 > 0 && x - 1 < matrix.length - 1 && matrix[y][x - 1].type != 'visited' && matrix[y][x - 1].type != 'path' && matrix[y][x - 1].type != 'wall') ng.push(matrix[y][x - 1]);
+    if (x + 1 > 0 && x + 1 < matrix.length - 1 && matrix[y][x + 1].type != 'visited' && matrix[y][x + 1].type != 'path' && matrix[y][x + 1].type != 'wall') ng.push(matrix[y][x + 1]);
+    if (y + 1 > 0 && y + 1 < matrix.length - 1 && matrix[y + 1][x].type != 'visited' && matrix[y + 1][x].type != 'path' && matrix[y + 1][x].type != 'wall') ng.push(matrix[y + 1][x]);
+    if (y - 1 > 0 && y - 1 < matrix.length - 1 && matrix[y - 1][x].type != 'visited' && matrix[y - 1][x].type != 'path' && matrix[y - 1][x].type != 'wall') ng.push(matrix[y - 1][x]);
     return ng
 }
 
@@ -169,7 +168,7 @@ function drawMatrix() {
                 element = currentCell
             }
             if (path.some(p => p.x == element.x && p.y == element.y)) {
-                element.type = 'wrong'
+                element.type = 'path'
             }
             ctx.fillStyle = color[element.type];
             ctx.fillRect(element.x, element.y, cellSize, cellSize);
