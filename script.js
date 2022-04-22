@@ -30,7 +30,7 @@ let stack = [];
 let path = []
 console.log(matrix);
 drawMatrix()
-//generateLabyrinth()
+generateLabyrinth()
 
 
 async function generateLabyrinth() {
@@ -98,7 +98,7 @@ async function labyrinthSolve() {
             stack.push(currentCell)
             wrongStack = []
         }
-       
+
 
         currentCell = selected
         ctx.fillStyle = color[currentCell.type];
@@ -118,8 +118,8 @@ async function labyrinthSolve() {
         console.log("No vars and no stack")
         return
     }
-    
-    
+
+
 
     if (currentCell.x == finalCell.x && currentCell.y == finalCell.y) {
         console.log("Finded")
@@ -193,3 +193,10 @@ function getRandInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
+$(document).ready(function () {
+    $("input[type=color]").change(function (event) {
+       let target = event.target
+       color[target.id] = target.value
+       drawMatrix()
+    });
+});
