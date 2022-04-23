@@ -40,7 +40,7 @@ drawMatrix()
 async function generateLabyrinth() {
     if (!keepGen) {
         keepGen = true
-        clearInterval(generationTimer)
+        generationTimer =clearInterval(generationTimer)
         return
     }   
     generationEnd = new Date()
@@ -52,7 +52,7 @@ async function generateLabyrinth() {
         $("#reset").css("display", "none");
         $("#solve").css("display", "block");
         $("#generate").css("display", "block");
-        clearInterval(generationTimer)
+        generationTimer = clearInterval(generationTimer)
         return
     }
     if (neighbours.length != 0) {
@@ -215,11 +215,13 @@ $(document).ready(function () {
     $("#generate").click(function () {
         generationStart = new Date()
         if(!generationTimer){
+            console.log("Setting timer")
             generationTimer = setInterval(()=>{
                 let diff = (generationEnd.getTime()-generationStart.getTime())/1000
                 $("#timer").text(`Generation time: ${Math.abs(diff)}`)
             })
         }
+        console.log("Missing timer",generationTimer)
         $("#generate").css("display", "none");
         $("#solve").css("display", "none");
         $("#reset").css("display", "block");
