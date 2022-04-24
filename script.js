@@ -6,6 +6,8 @@ let cellSize = 10
 let keepGen = true
 let generationStart,generationEnd
 let generationTimer
+let solveStart,solveEnd
+let solveTimer
 
 let color = {
 
@@ -94,6 +96,8 @@ function refreshLabyrinth() {
     }
 }
 async function labyrinthSolve() {
+    solveEnd = new Date()
+
     let neighbours = getNeighboursNoWall(currentCell.y / cellSize, currentCell.x / cellSize)
     let oldCurrent = currentCell
 
@@ -128,6 +132,7 @@ async function labyrinthSolve() {
     }
     else {
         console.log("No vars and no stack")
+        solveTimer = clearInterval(solveTimer)
         return
     }
 
@@ -136,6 +141,7 @@ async function labyrinthSolve() {
     if (currentCell.x == finalCell.x && currentCell.y == finalCell.y) {
         console.log("Finded")
         $("#generate").css("display", "block");
+        solveTimer = clearInterval(solveTimer)
         return
     }
     //drawMatrix()
@@ -241,8 +247,24 @@ $(document).ready(function () {
         path = []
     })
     $("#solve").click(function(){
+        solveStart = new Date()
+        if(!solveTimer){
+            console.log("Setting timer")
+            solveTimer = setInterval(()=>{
+                let diff = (solveEnd.getTime()-solveStart.getTime())/1000
+                $("#timerSolve").text(`Solve time: ${Math.abs(diff)}`)
+            })
+        }
         $("#generate").css("display", "none");
         $("#solve").css("display", "none");
         labyrinthSolve()
     })
+
+
+
+    function download() {
+        var dt = canvas.toDataURL('image/png').replace("image/png", "image/octet-stream");;
+        this.href = dt;
+    };
+    downloadCn.addEventListener('click', download, false);
 });

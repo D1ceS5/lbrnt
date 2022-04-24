@@ -12,8 +12,9 @@
 <body>
     <div id="labCont">
         <canvas id="matrix" width="510px" height="510px"></canvas>
-        <div  name="colors">
-            <h3 id="timer">Generation time: 0.00</h3>
+        <div name="colors">
+            <h3 class="timer" id="timer">Generation time: 0.00</h3>
+            <h3 class="timer" id="timerSolve">Solve time: 0.00</h3>
             <div id="colors">
                 <div class="colorDiv">
                     <input type="color" class="colorInp" id="visited" name="Visited" value="#1924B1">
@@ -40,18 +41,22 @@
                     <label for="Visited">Path</label>
                 </div>
             </div>
-            
 
 
+            <div class="buttonCont" >
+                <button id="generate" class="action-button shadow animate green">Generate</button>
+                <button id="reset" class="action-button shadow animate red">Reset</button>
+                <button id="solve" class="action-button shadow animate green">Solve</button>
+            </div>
+            <div class="buttonCont">
+                <button id="saveImg"  class="action-button shadow animate blue"><a id="downloadCn" download="matrix.png">Save matrix as IMG</a></button>
+            </div>
 
-            
-            <button id="generate" class="action-button shadow animate green">Generate</button>
-            <button id="reset" class="action-button shadow animate red">Reset</button>
-            <button id="solve" class="action-button shadow animate green">Solve</button>
+
         </div>
-        
+
     </div>
-   
+
     <script src="script.js"></script>
 </body>
 

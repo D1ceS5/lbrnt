@@ -18,7 +18,10 @@ label {
 #matrix {
     display: block;
 }
-#timer{
+.buttonCont{
+    display: flex;
+}
+.timer{
     font-family: 'Lato', sans-serif;
     margin-left: 10px;
 }
@@ -142,16 +145,20 @@ button{
 	border-bottom: 1px solid;
 }
 #generate{
-    width: 40%;
+    width: 50%;
     margin-left: 10px;
 }
 #solve{
     display: none;
-    width: 40%;
+    width: 50%;
     margin-left: 10px;
 }
 #reset{
-    width: 40%;
+    width: 50%;
     display: none;
+    margin-left: 10px;
+}
+#saveImg{
+    width: 50%;
     margin-left: 10px;
 }
